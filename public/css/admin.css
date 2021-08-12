@@ -7,12 +7,23 @@ header {
   margin-bottom: 20px;
 }
 
-.select {
-  width: 150px;
-  height: 40px;
+.header-btn {
+  height: 30px;
 }
 
-button {
+.select {
+  width: 150px;
+  height: 30px;
+  margin-right: 10px;
+}
+
+.search-input {
+  height: 30px;
+  width: 300px;
+  margin-right: 10px;
+}
+
+.submit-btn {
   display: block;
   margin: auto;
   width: 100px;
@@ -26,11 +37,14 @@ button {
 }
 
 input {
-  width: 45%;
-  height: 40px;
   border: 1px solid #bbb;
   outline: none;
   border-radius: 4px;
+}
+
+.form-input {
+  width: 45%;
+  height: 40px;
 }
 
 input:focus, input:hover {

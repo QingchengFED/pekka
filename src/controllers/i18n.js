@@ -15,6 +15,7 @@ function getWords(ctx) {
   }
 }
 
+// 上传
 function saveWords(ctx) {
   try {
     const filePath = getFilePath(ctx);
@@ -29,6 +30,7 @@ function saveWords(ctx) {
   }
 }
 
+// 保存翻译
 function updatewords(ctx) {
   try {
     const { body } = ctx.request;
@@ -55,7 +57,14 @@ async function adminViews(ctx) {
 function getLocales(ctx) {
   const filePath = getFilePath(ctx);
   const words = fs.readFileSync(filePath, 'utf-8');
-  const data = (words && JSON.parse(words)) || {};
+  let data = (words && JSON.parse(words)) || {};
+  const { onlyEmpty, q } = ctx.query;
+  if (onlyEmpty == 1 || q) {
+    let wordsArray = Object.entries(data);
+    if (onlyEmpty == 1) wordsArray = wordsArray.filter(([key, val]) => !val);
+    if (q) wordsArray = wordsArray.filter(([key, val]) => ~key.indexOf(q));
+    data = array2obj(wordsArray);
+  }
   return data;
 }
 

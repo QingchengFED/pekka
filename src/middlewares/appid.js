@@ -1,4 +1,5 @@
 /**
+ * 中间件
  * 检查要翻译的appid是否存在
  */
 const { appMap } = require('../configs');

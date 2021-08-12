@@ -15,7 +15,7 @@ app.use(bodyParser());
 
 app.use(static(path.resolve('public')));
 
-app.use(views(path.resolve('views'), { extension: 'ejs' }));
+app.use(views(path.resolve(__dirname, './views'), { extension: 'ejs' }));
 
 app.use(router.routes()).use(router.allowedMethods());
 
