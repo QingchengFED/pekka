@@ -1,0 +1,6 @@
+{
+    "ignore": ["public/*", "locales/*"],
+    "env": {
+        "NODE_ENV": "development"
+    }
+}

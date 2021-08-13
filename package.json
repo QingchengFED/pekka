@@ -1,0 +1,26 @@
+{
+  "private": true,
+  "name": "fe_i18n",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/app.js",
+  "scripts": {
+    "debug": "cross-env NODE_ENV=development nodemon src/app.js",
+    "dev": "cross-env NODE_ENV=development pm2 start src/app.js --name 'fe_i18n' --node-args='--harmony'",
+    "start": "cross-env NODE_ENV=production pm2 start src/app.js --name 'fe_i18n' --node-args='--harmony'",
+    "restart": "cross-env NODE_ENV=production pm2 restart src/app.js --name 'fe_i18n' --node-args='--harmony'"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cross-env": "^7.0.3",
+    "ejs": "^3.1.6",
+    "koa": "^2.13.1",
+    "koa-bodyparser": "^4.3.0",
+    "koa-logger": "^3.2.1",
+    "koa-router": "^10.0.0",
+    "koa-static": "^5.0.0",
+    "koa-views": "^7.0.1",
+    "log4js": "^6.3.0"
+  }
+}
