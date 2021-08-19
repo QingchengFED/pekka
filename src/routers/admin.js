@@ -1,6 +1,6 @@
 const Router = require('koa-router');
-const appidWare = require('../middlewares/appid')
-const { adminViews } = require('../controllers/i18n')
+const { adminViews } = require('../controllers/i18n');
+const appidWare = require('../middlewares/appid');
 
 const router = (module.exports = new Router());
 

@@ -1,38 +1,33 @@
 const { reactive, setup, createApp } = Vue;
 
-let searchParams = new URLSearchParams(location.search);
-
 createApp({
   setup() {
     const state = reactive({
+      id,
       apps,
-      wordsArray: obj2arr(data),
-      onlyEmpty: +searchParams.get('onlyEmpty'),
-      q: searchParams.get('q'),
+      wordsKeys: Object.keys(data['en-us']),
+      zh_cn: data['zh-cn'],
+      en_us: data['en-us'],
+      empty: false,
     });
 
     function submit() {
-      updateWords(arr2obj(state.wordsArray))
+      updateWords({ 'zh-cn': state.zh_cn, 'en-us': state.en_us })
         .then(() => {
           window.alert('提交成功');
         })
         .catch(window.alert);
     }
-    function toggleEmpty() {
-      searchParams.set('onlyEmpty', +!state.onlyEmpty);
-      location.search = searchParams.toString();
-    }
     function selectAPP(e) {
       location.pathname = `/fe-i18n/admin/${e.target.value}`;
     }
-    function search() {
-      searchParams.set('q', state.q);
-      location.search = searchParams.toString();
+    function toggleEmpty() {
+      state.empty = !state.empty;
+      state.wordsKeys = state.empty ? filterEmpty(state.en_us) : Object.keys(state.en_us);
     }
     return {
       state,
       submit,
-      search,
       selectAPP,
       toggleEmpty,
     };
@@ -47,13 +42,12 @@ function obj2arr(obj) {
   return array;
 }
 
-function arr2obj(arr) {
-  return arr.reduce((obj, { key, val }) => {
-    if (val) obj[key] = val;
-    return obj;
-  }, {});
-}
-
 function updateWords(data) {
   return axios.put(`/fe-i18n/api/i18n/${id}`, data);
+}
+
+function filterEmpty(obj) {
+  return Object.keys(obj).filter(key => {
+    return !obj[key] || (typeof obj[key] === 'object' && filterEmpty(obj[key]).length);
+  });
 }

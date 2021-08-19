@@ -19,20 +19,31 @@
 <body>
   <div id="app" v-cloak>
     <header>
-      <select class="select" @change="selectAPP">
+      <select class="select" v-model="state.id" @change="selectAPP">
         <option v-for="item in state.apps" :value="item.id">{{item.name}}</option>
       </select>
-      <input class="search-input" type="text" v-model="state.q" @keyup.enter="search"  placeholder="回车搜索">
+      <!-- <input class="search-input" type="text" v-model="state.q" @keyup.enter="search"  placeholder="回车搜索"> -->
       <button class="header-btn" @click="toggleEmpty">{{state.onlyEmpty ? '显示全部' : '仅显示未翻译条目'}}</button>
     </header>
-    <div class="form-item" v-for="(item, index) in state.wordsArray" :key="index">
-      <label>
+    <div class="form-item" v-for="(key, index) in state.wordsKeys" :key="key">
+      <div v-if="typeof state.en_us[key] !== 'object'">
         <span class="num">{{index + 1}}. </span>
-        <span class="label-text">{{item.key}}:</span>
-        <input class="form-input" type="text" v-model="item.val">
-      </label>
+        <span class="label-text">{{key}}:</span>
+        <input class="form-input" type="text" v-model="state.zh_cn[key]">
+        <input class="form-input" type="text" v-model="state.en_us[key]">
+      </div>
+      <div v-else>
+        <span class="num">{{index + 1}}. </span>
+        <span v-for="subKey in Object.keys(state.en_us[key])" :key="subKey">
+          <span  v-if="!state.empty || !state.en_us[key][subKey]">
+            <span class="label-text">{{key + '.' + subKey}}:</span>
+            <input class="form-input" type="text" v-model="state.zh_cn[key][subKey]">
+            <input class="form-input" type="text" v-model="state.en_us[key][subKey]">
+          </span>
+        </span>
+      </div>
     </div>
-    <button class="submit-btn" @click="submit" v-if="state.wordsArray.length">提交</button>
+    <button class="submit-btn" @click="submit" v-if="state.wordsKeys.length">提交</button>
   </div>
   <script src="/js/admin.js"></script>
   <script
