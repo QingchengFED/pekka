@@ -21,12 +21,9 @@ npm restart
 ```
 /fe-i18n/admin/:id
 ```
+> `id`: 配置在`src/config` 里的需要翻译的项目
 
 ### apis
-```
-/fe-i18n/api/i18n/:id
-```
-> `id` 在`src/config` 里配置需要翻译的project
-- GET 获取翻译后json
-- POST 储存语料key
-- PUT 修改语料
+- GET `/fe-i18n/api/i18n/:id{/:lang}` 获取翻译后json
+- POST `/fe-i18n/api/i18n/:id/:lang` 储存语料key
+- PUT `/fe-i18n/api/i18n/:id` 修改语料

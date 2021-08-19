@@ -20,7 +20,7 @@ module.exports = {
   // 上传
   saveWords(ctx) {
     try {
-      const filePath = getFilePath(ctx);
+      const filePath = getFilePath(ctx, ctx.params.lang);
       const { body } = ctx.request;
       fs.writeFileSync(filePath, JSON.stringify(body, null, '\t'));
 

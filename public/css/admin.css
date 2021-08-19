@@ -61,6 +61,14 @@ input:focus, input:hover {
   margin-bottom: 10px;
 }
 
+.form-item {
+  display: flex;
+}
+
+.form-item-content {
+  flex: 1;
+}
+
 .form-item .label-text {
   display: inline-block;
   width: 20%;
