@@ -1,20 +1,33 @@
-const { reactive, setup, createApp } = Vue;
+const { reactive, setup, createApp, getCurrentInstance } = Vue;
 
-createApp({
+const zh_cn = data['zh-cn'];
+const en_us = data['en-us'];
+
+const [zhUniqueKeys, enUniqueKeys] = diffObjs(zh_cn, en_us);
+
+const tip1 = zhUniqueKeys.length && `中文keys: ${zhUniqueKeys.join('、')} 在英文中不存在`;
+const tip2 = enUniqueKeys.length && `英文keys: ${enUniqueKeys.join('、')} 在中文中不存在`;
+
+let cachedTableData; // 切换未翻译时缓存数据
+
+const app = createApp({
   setup() {
+    const internalInstance = getCurrentInstance();
+    const { globalProperties } = internalInstance.appContext.config;
+
     const state = reactive({
       id,
       apps,
-      wordsKeys: Object.keys(data['en-us']),
-      zh_cn: data['zh-cn'],
-      en_us: data['en-us'],
+      tableData: formatTableData(zh_cn, en_us),
       empty: false,
+      tip1,
+      tip2,
     });
 
     function submit() {
-      updateWords({ 'zh-cn': state.zh_cn, 'en-us': state.en_us })
+      updateWords(getUpdateData(state.tableData))
         .then(() => {
-          window.alert('提交成功');
+          globalProperties.$message.success('提交成功');
         })
         .catch(window.alert);
     }
@@ -23,7 +36,8 @@ createApp({
     }
     function toggleEmpty() {
       state.empty = !state.empty;
-      state.wordsKeys = state.empty ? filterEmpty(state.en_us) : Object.keys(state.en_us);
+      if (state.empty) cachedTableData = state.tableData;
+      state.tableData = state.empty ? filterEmpty(state.tableData) : cachedTableData;
     }
     return {
       state,
@@ -32,7 +46,10 @@ createApp({
       toggleEmpty,
     };
   },
-}).mount('#app');
+});
+
+app.use(ElementPlus.default);
+app.mount('#app');
 
 function obj2arr(obj) {
   const array = [];
@@ -46,8 +63,94 @@ function updateWords(data) {
   return axios.put(`/fe-i18n/api/i18n/${id}`, data);
 }
 
-function filterEmpty(obj) {
-  return Object.keys(obj).filter(key => {
-    return !obj[key] || (typeof obj[key] === 'object' && filterEmpty(obj[key]).length);
+function filterEmpty(arr) {
+  return arr
+    .map(item => {
+      if (item.children) {
+        item.children = filterEmpty(item.children);
+        return item.children.length ? item : false;
+      } else {
+        return item.en ? false : item;
+      }
+    })
+    .filter(v => v);
+}
+
+function formatTableData(zh_cn, en_us) {
+  if (typeof zh_cn !== 'object') return;
+
+  return Object.entries(zh_cn).map(([k, v]) => {
+    if (typeof v === 'object') {
+      return {
+        key: k,
+        id: idFunc(),
+        children: formatTableData(v, en_us[k]),
+      };
+    } else {
+      return {
+        key: k,
+        id: idFunc(),
+        zh: v,
+        en: en_us[k],
+      };
+    }
   });
+
+  function idFunc() {
+    return Math.random().toString(32).slice(-8);
+  }
+}
+
+function getUpdateData(arr) {
+  return {
+    'zh-cn': arr2obj(arr, 'zh'),
+    'en-us': arr2obj(arr, 'en'),
+  };
+
+  function arr2obj(arr, lang) {
+    const init = {};
+    return arr.reduce((data, item) => {
+      if (Array.isArray(item.children)) {
+        data[item.key] = arr2obj(item.children, lang);
+      } else {
+        data[item.key] = item[lang];
+      }
+      return data;
+    }, init);
+  }
+}
+
+/**
+ * 暂时只支持比较两层对象key
+ * @param {object} s1
+ * @param {object} s2
+ * @returns  各自独有的keys
+ */
+function diffObjs(s1, s2) {
+  const keys1 = objKeysDeep(s1);
+  const keys2 = objKeysDeep(s2);
+
+  keys1.forEach(k => {
+    if (keys2.has(k)) {
+      keys1.delete(k);
+      keys2.delete(k);
+    }
+  });
+
+  return [[...keys1], [...keys2]];
+
+  function objKeysDeep(obj) {
+    const result = new Set();
+    Object.entries(obj).forEach(([k, v]) => {
+      if (typeof v === 'object') {
+        Object.entries(v).forEach(([k1]) => {
+          result.add(`${k}.${k1}`);
+        });
+      } else {
+        result.add(k);
+      }
+    });
+
+    return result;
+  }
 }

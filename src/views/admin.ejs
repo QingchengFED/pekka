@@ -7,8 +7,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="/css/admin.css">
   <title>QingchengFE I18n</title>
+  <!-- <link rel="stylesheet" href="https://static.qingchengfit.cn/lib/element@1.1.0.2fbd6f69fd8e3b384e26974d2043951f.css"> -->
+  <link rel="stylesheet" href="//unpkg.com/element-plus/dist/index.css">
   <script
     src="https://static.qingchengfit.cn/lib/vue3.2.1.66baceff9aaef9bff7d9914aa3572b6b.js"></script>
+  <script src="https://static.qingchengfit.cn/lib/element@1.1.0.581397c8183f4fb3d79b51fae40a5e46.js"></script>
   <script>
     var data = <%- JSON.stringify(words) %>;
     var id = <%- id %>;
@@ -16,38 +19,59 @@
   </script>
 </head>
 
-<body>
+<body class=".el-scrollbar__wrap">
   <div id="app" v-cloak>
-    <header>
-      <select class="select" v-model="state.id" @change="selectAPP">
-        <option v-for="item in state.apps" :value="item.id">{{item.name}}</option>
-      </select>
-      <button class="header-btn" @click="toggleEmpty">{{state.onlyEmpty ? '显示全部' : '仅显示未翻译条目'}}</button>
-    </header>
-    <div v-for="(key, index) in state.wordsKeys" :key="key">
-      <div class="form-item" v-if="typeof state.en_us[key] !== 'object'">
-        <span class="num">{{index + 1}}. </span>
-        <div class="form-item-content">
-          <span class="label-text">{{key}}:</span>
-          <input class="form-input" type="text" v-model="state.zh_cn[key]">
-          <input class="form-input" type="text" v-model="state.en_us[key]">
-        </div>
-      </div>
-      <div class="form-item" v-else>
-        <span class="num">{{index + 1}}. </span>
-        <div class="form-item-content">
-          <span v-for="subKey in Object.keys(state.en_us[key])" :key="subKey">
-            <span v-if="!state.empty || !state.en_us[key][subKey]">
-              <span class="label-text">{{key + '.' + subKey}}:</span>
-              <input class="form-input" type="text" v-model="state.zh_cn[key][subKey]">
-              <input class="form-input" type="text" v-model="state.en_us[key][subKey]">
-            </span>
-          </span>
-        </div>
-      </div>
+    <div @keyup.alt.enter="submit" v-if="state.tableData.length">
+      <header>
+        <el-select class="app-select" v-model="state.id" placeholder="请选择" @change="selectAPP">
+          <el-option
+            v-for="item in state.apps"
+            :key="item.id"
+            :label="item.name"
+            :value="item.id">
+          </el-option>
+        </el-select>
+        <el-button type="primary" @click="toggleEmpty">{{state.empty ? '显示全部' : '仅显示未翻译条目'}}</el-button>
+      </header>
+
+      <el-alert class="mbt-10" v-if="state.tip1" :title="state.tip1" type="error"></el-alert>
+      <el-alert class="mbt-10" v-if="state.tip2" :title="state.tip2" type="error"></el-alert>
+    
+      <el-table
+        :data="state.tableData"
+        style="width: 100%;margin-bottom: 20px;"
+        row-key="id"
+        default-expand-all
+        border>
+        <el-table-column
+          type="index"
+          :index="(index) => index + 1">
+        </el-table-column>
+        <el-table-column
+          prop="key"
+          label="key"
+          width="260">
+        </el-table-column>
+        <el-table-column
+          prop="zh"
+          label="中">
+        </el-table-column>
+        <!-- <el-table-column label="中">
+          <template #default="scope">
+            <el-input v-if="!scope.row.children" v-model="scope.row.zh" placeholder="请输入中文"></el-input>
+          </template>
+        </el-table-column> -->
+        <el-table-column label="英">
+          <template #default="scope">
+            <el-input v-if="!scope.row.children" v-model="scope.row.en" placeholder="请输入英文"></el-input>
+          </template>
+        </el-table-column>
+      </el-table>
+      <el-button circle class="submit-btn" @click="submit">提交</button>
     </div>
-    <button class="submit-btn" @click="submit" v-if="state.wordsKeys.length">提交</button>
+    <el-result v-else icon="info" title="无语料" sub-title="请先上传"></el-result>
   </div>
+
   <script src="/js/admin.js"></script>
   <script
     src="https://static.qingchengfit.cn/lib/axios@0.21.1.70489d9432ef978db53bebda3e9f4c14.js"></script>
