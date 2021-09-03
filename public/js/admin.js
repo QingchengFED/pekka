@@ -3,22 +3,24 @@ const { reactive, setup, createApp, getCurrentInstance } = Vue;
 const zh_cn = data['zh-cn'];
 const en_us = data['en-us'];
 
-const [zhUniqueKeys, enUniqueKeys] = diffObjs(zh_cn, en_us);
-
-const tip1 = zhUniqueKeys.length && `中文keys: ${zhUniqueKeys.join('、')} 在英文中不存在`;
-const tip2 = enUniqueKeys.length && `英文keys: ${enUniqueKeys.join('、')} 在中文中不存在`;
 
 let cachedTableData; // 切换未翻译时缓存数据
+const cacheZhSet = new Set(); //缓存中文去重
 
 const app = createApp({
   setup() {
     const internalInstance = getCurrentInstance();
     const { globalProperties } = internalInstance.appContext.config;
+    const tableData = formatTableData(zh_cn, en_us);
 
+    const [zhUniqueKeys, enUniqueKeys] = diffObjs(zh_cn, en_us);
+    const tip1 = zhUniqueKeys.length && `中文keys: ${zhUniqueKeys.join('、')} 在英文中不存在`;
+    const tip2 = enUniqueKeys.length && `英文keys: ${enUniqueKeys.join('、')} 在中文中不存在`;
+    
     const state = reactive({
       id,
       apps,
-      tableData: formatTableData(zh_cn, en_us),
+      tableData,
       empty: false,
       tip1,
       tip2,
@@ -79,22 +81,28 @@ function filterEmpty(arr) {
 function formatTableData(zh_cn, en_us) {
   if (typeof zh_cn !== 'object') return;
 
-  return Object.entries(zh_cn).map(([k, v]) => {
-    if (typeof v === 'object') {
-      return {
-        key: k,
-        id: idFunc(),
-        children: formatTableData(v, en_us[k]),
-      };
-    } else {
-      return {
-        key: k,
-        id: idFunc(),
-        zh: v,
-        en: en_us[k],
-      };
-    }
-  });
+  return Object.entries(zh_cn)
+    .map(([k, v]) => {
+      if (typeof v === 'object') {
+        const children = formatTableData(v, en_us[k]);
+        if (children.length) {
+          return {
+            key: k,
+            id: idFunc(),
+            children,
+          };
+        }
+      } else if (!cacheZhSet.has(v)) {
+        cacheZhSet.add(v);
+        return {
+          key: k,
+          id: idFunc(),
+          zh: v,
+          en: en_us[k],
+        };
+      }
+    })
+    .filter(item => !!item);
 
   function idFunc() {
     return Math.random().toString(32).slice(-8);
