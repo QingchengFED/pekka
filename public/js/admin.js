@@ -73,18 +73,29 @@ const app = createApp({
     }
 
     function onDelete(row) {
-      // 删靠前的，页面更新巨慢
-      console.group('del');
-      console.time('data');
-      console.time('page');
+      globalProperties
+        .$confirm(`确定要删除${row.key}吗？`, '删除', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning',
+        })
+        .then(del)
+        .catch(() => {});
 
-      row.delSelf(state.tableData);
+      function del() {
+        // 删靠前的，页面更新巨慢
+        console.group('del');
+        console.time('data');
+        console.time('page');
 
-      console.timeEnd('data');
-      nextTick(() => {
-        console.timeEnd('page');
-        console.groupEnd();
-      });
+        row.delSelf(state.tableData);
+
+        console.timeEnd('data');
+        nextTick(() => {
+          console.timeEnd('page');
+          console.groupEnd();
+        });
+      }
     }
 
     function onAdd() {
