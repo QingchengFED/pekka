@@ -7,7 +7,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="/css/admin.css">
   <title>QingchengFE I18n</title>
-  <!-- <link rel="stylesheet" href="https://static.qingchengfit.cn/lib/element@1.1.0.2fbd6f69fd8e3b384e26974d2043951f.css"> -->
   <link rel="stylesheet" href="https://unpkg.com/element-plus@1.1.0-beta.1/dist/index.css">
   <script
     src="https://static.qingchengfit.cn/lib/vue3.2.1.66baceff9aaef9bff7d9914aa3572b6b.js"></script>
@@ -23,7 +22,7 @@
   <div id="app" v-cloak>
     <div @keyup.alt.enter="submit" v-if="state.tableData.length">
       <header>
-        <el-select class="app-select" v-model="state.id" placeholder="请选择" @change="selectAPP">
+        <el-select class="app-select" v-model="state.id" placeholder="请选择">
           <el-option
             v-for="item in state.apps"
             :key="item.id"
@@ -32,6 +31,8 @@
           </el-option>
         </el-select>
         <el-button type="primary" @click="toggleEmpty">{{state.empty ? '显示全部' : '仅显示未翻译条目'}}</el-button>
+        <el-button type="primary" @click="onAdd">添加</el-button>
+        <el-button type="primary" @click="onAddParent">添加外层</el-button>
       </header>
 
       <el-alert class="mbt-10" v-if="state.tip1" :title="state.tip1" type="error"></el-alert>
@@ -43,38 +44,54 @@
         row-key="id"
         default-expand-all
         border>
-        <el-table-column
-          type="index"
-          :index="(index) => index + 1">
-        </el-table-column>
-        <el-table-column
-          prop="key"
-          label="key"
-          width="260">
-        </el-table-column>
-        <el-table-column
-          prop="zh"
-          label="中">
-        </el-table-column>
-        <!-- <el-table-column label="中">
+        <el-table-column type="index" :index="(index) => index + 1"></el-table-column>
+        <el-table-column prop="key" label="key" width="260"></el-table-column>
+        <!-- <el-table-column prop="zh" label="中"></el-table-column> -->
+        <el-table-column label="中">
           <template #default="scope">
             <el-input v-if="!scope.row.children" v-model="scope.row.zh" placeholder="请输入中文"></el-input>
           </template>
-        </el-table-column> -->
+        </el-table-column>
         <el-table-column label="英">
           <template #default="scope">
             <el-input v-if="!scope.row.children" v-model="scope.row.en" placeholder="请输入英文"></el-input>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="180">
+          <template #default="scope">
+            <el-button size="mini" type="danger" @click="onDelete(scope.row)">
+              删除
+            </el-button>
+            <el-button v-if="scope.row.children" size="mini" @click="onAddChild(scope.row)">
+              添加
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
       <el-button circle class="submit-btn" @click="submit">提交</button>
     </div>
     <el-result v-else icon="info" title="无语料" sub-title="请先上传"></el-result>
+    <el-dialog v-model="state.showAddForm" title="添加">
+      <el-form :model="state.formData" label-width="80px" ref="addForm">
+        <el-form-item label="key" prop="key"  :rules="{ required: true, message: '请填写key' }">
+          <el-input v-model="state.formData.key" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="中文" prop="zh" :rules="{ required: true, message: '请填写中文' }">
+          <el-input v-model="state.formData.zh" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="英文" prop="en" :rules="{ required: true, message: '请填写英文' }">
+          <el-input v-model="state.formData.en" autocomplete="off"></el-input>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="resetForm">取消</el-button>
+        <el-button type="primary" @click="saveForm">确定</el-button>
+      </template>
+    </el-dialog>
   </div>
 
   <script src="/js/admin.js"></script>
-  <script
-    src="https://static.qingchengfit.cn/lib/axios@0.21.1.70489d9432ef978db53bebda3e9f4c14.js"></script>
+  <script src="https://static.qingchengfit.cn/lib/axios@0.21.1.70489d9432ef978db53bebda3e9f4c14.js"></script>
 </body>
 
 </html>
